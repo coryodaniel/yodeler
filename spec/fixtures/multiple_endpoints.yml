@@ -1,0 +1,17 @@
+default: dashboard
+endpoints:
+  dashboard:
+    adapter: http
+    port: 3030
+    host: localhost
+    path: /event
+    use_ssl: true
+    default_params:
+      auth_token: MY_AUTH_TOKEN
+
+  grumpy_old_dev_ops_guy:
+    adapter: sms
+    phone_numbers:
+      - "+15555555555"
+      - "+15555556666"
+    min_secs_between: 3600
