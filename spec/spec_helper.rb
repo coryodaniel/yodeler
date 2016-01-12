@@ -30,4 +30,8 @@ RSpec.configure do |c|
     Yodeler.reset!
     Yodeler.register_adapter(:memory, Yodeler::Adapters::MemoryAdapter)
   }
+
+  c.after(:suite) do
+    WebMock.disable_net_connect!(:allow => 'codeclimate.com')
+  end
 end
