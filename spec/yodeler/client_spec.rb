@@ -9,99 +9,213 @@ RSpec.describe Yodeler::Client do
     end
     let(:adapter){ client.default_endpoint.adapter }
 
-    describe '#format_options' do
-      describe ':to' do
-        context 'when not provided' do
-          it "defaults to the Client#default_endpoint_name" do
-            opts = client.format_options({})
-            expect(opts[:to]).to eq([:default])
-          end
-        end
-
-        context 'when an array is provided' do
-          it "returns the array" do
-            opts = client.format_options({to: [:ops_dashboard, :sales_dashboard]})
-            expect(opts[:to]).to eq([:ops_dashboard, :sales_dashboard])
-          end
-        end
-
-        context 'when a symbol is provided' do
-          it "wraps it in an array" do
-            opts = client.format_options({to: :sales_dashboard})
-            expect(opts[:to]).to eq([:sales_dashboard])
-          end
-        end
-      end
-
-      describe ':tags' do
-        context 'when a string is provided' do
-          it "wraps it in an array" do
-            opts = client.format_options({tags: :sales})
-            expect(opts[:tags]).to eq([:sales])
-          end
-        end
-
-        context 'when an array is provided' do
-          it "returns the array" do
-            opts = client.format_options({tags: [:sales, :opts]})
-            expect(opts[:tags]).to eq([:sales,:opts])
-          end
-        end
-      end
-
-      describe ':sample_rate' do
-        context 'when it is not provided' do
-          it "defaults to 1.0" do
-            opts = client.format_options({})
-            expect(opts[:sample_rate]).to eq 1.0
-          end
-        end
-
-        context 'when it is provided' do
-          it "sets the sample rate" do
-            opts = client.format_options({sample_rate: 0.5})
-            expect(opts[:sample_rate]).to eq 0.5
-          end
-        end
-      end
-    end
-
+    pending '#set' #Sets count the number of unique values passed to a key.
+    pending '#decrement'
+    
     describe '#gauge' do
-      pending
-      # it "" do
-      #   client.gauge('users.count', 100)
-      #   allow(adapter)
-      # end
+      pending ':delta option' #amount to change gauge by
+
+      it "dispatches a 'gauge' metric" do
+        expect{ client.gauge('users.count', 100) }.
+          to change(adapter.queue, :length).by(1)
+
+        expect(adapter.queue.last.name).to eq 'users.count'
+      end
     end
-    #client.gauge 'checkout.cart_size', order.products.count
 
-    describe '#increment'
-    #client.increment 'user.signup'
-    describe '#decrement'
-    #client.increment 'sessions'
+    describe '#increment' do
+      context 'when the increment amount is given' do
+        it "dispatches an 'increment' metric" do
+          expect{ client.increment('users.count', 1) }.
+            to change(adapter.queue, :length).by(1)
 
-    describe '#measure'
-    #client.measure 'eating.sandwich', 500 #ms #=> nil
-    #client.measure('eating.pizza') do
-    # Meal.create!
-    #end #=> Meal instance
+          expect(adapter.queue.last.name).to eq 'users.count'
+          expect(adapter.queue.last.value).to be 1
+        end
+      end
 
-    describe '#emit'
-    # client.emit(category, action, opt_label, opt_value)
+      context 'when the increment amount is not given' do
+        it "dispatches an 'increment' metric" do
+          expect{ client.increment('users.count') }.
+            to change(adapter.queue, :length).by(1)
 
-    pending '#set'
-    pending '#key_value'
-    pending '#histogram'
-    pending 'when passed the :tags option'
-    pending 'when passed the :sample_rate option'
+          expect(adapter.queue.last.name).to eq 'users.count'
+          expect(adapter.queue.last.value).to be 1
+        end
+      end
+
+      context 'when the options are the second argument' do
+        it "dispatches an 'increment' metric" do
+          expect{ client.increment('users.count', prefix: :test) }.
+            to change(adapter.queue, :length).by(1)
+
+          expect(adapter.queue.last.name).to eq 'test.users.count'
+          expect(adapter.queue.last.value).to be 1
+        end
+      end
+    end
+
+    describe '#timing' do
+      context 'when receiving a block' do
+        context 'when options are provided' do
+          it "dispatches a 'timing' metric and returns the result of the block" do
+            retval = client.timing 'eat.sandwich', {prefix: :test} do
+              sleep(0.00001)
+              'it had cheese on it'
+            end
+
+            expect(retval).to eq 'it had cheese on it'
+            expect(adapter).to have_dispatched(:timing, 'test.eat.sandwich').within(1).of(0)
+          end
+        end
+
+        it "dispatches a 'timing' metric and returns the result of the block" do
+          retval = client.timing('eat.sandwich') do
+            sleep(0.00001)
+            'it had cheese on it'
+          end
+
+          expect(retval).to eq 'it had cheese on it'
+          expect(adapter).to have_dispatched(:timing, 'eat.sandwich').within(1).of(0)
+        end
+      end
+
+      it "dispatches a 'timing' metric" do
+        client.timing 'eat.sandwich', 250
+        expect(adapter).to have_dispatched(:timing, 'eat.sandwich').with(250)
+      end
+
+      it "dispatches a 'timing' metric" do
+        client.timing 'eat.sandwich', 500, {prefix: 'test'}
+        expect(adapter).to have_dispatched(:timing, 'test.eat.sandwich').with(500)
+      end
+    end
+
+    describe '#event' do
+      it "dispatches an event" do
+        payload = {name: "Roy", avatar: "http://example.com/fat-chicken.jpg"}
+        client.event('user.sign_up', payload)
+        expect(adapter).to have_dispatched(:event, 'user.sign_up').with(payload)
+      end
+    end
+
+    context 'when passed the :sample_rate option' do
+      context "when the metric is not sampled" do
+        it "does not dispatch the metric" do
+          expect_any_instance_of(Yodeler::Metric).to receive(:rand).and_return(0.99)
+          client.increment("users.count", sample_rate: 0.75)
+          expect(adapter).to_not have_dispatched(:increment, "users.count")
+        end
+      end
+    end
+
     context 'when passed the :to option' do
-      pending
-      # client.gauge 'checkout.cart_size', order.products.count,
-      #   to: [:sales_dashboard]
+      it "dispatches to the correct adapters" do
+        client = Yodeler::Client.new
+        ops_adapter   = client.endpoint(:ops_dashboard).use(:memory)
+        sales_adapter = client.endpoint(:sales_dashboard).use(:memory)
+
+        client.gauge 'checkout.cart_size', 3, to: [:sales_dashboard]
+
+        expect(ops_adapter).to_not have_dispatched(:gauge, 'checkout.cart_size')
+        expect(sales_adapter).to have_dispatched(:gauge, 'checkout.cart_size').with(3)
+      end
     end
   end
 
-  pending '#default_sample_rate'
+  describe '#format_options' do
+    let(:client) do
+      client = Yodeler::Client.new
+      client.adapter(:memory)
+      client
+    end
+    let(:adapter){ client.default_endpoint.adapter }
+
+    describe ':sample_rate' do
+      context 'when not provided' do
+        it "defaults to the Client#default_sample_rate" do
+          client.default_sample_rate = 0.5
+          opts = client.format_options({})
+          expect(opts[:sample_rate]).to eq 0.5
+        end
+      end
+
+      it "defaults to the Client#default_prefix" do
+        opts = client.format_options({sample_rate: 0.75})
+        expect(opts[:sample_rate]).to eq 0.75
+      end
+    end
+
+    describe ':prefix' do
+      context 'when not provided' do
+        it "defaults to the Client#default_prefix" do
+          client.default_prefix = :bar
+          opts = client.format_options({})
+          expect(opts[:prefix]).to eq :bar
+        end
+      end
+
+      it "defaults to the Client#default_prefix" do
+        opts = client.format_options({prefix: :foo})
+        expect(opts[:prefix]).to eq :foo
+      end
+    end
+
+    describe ':to' do
+      context 'when not provided' do
+        it "defaults to the Client#default_endpoint_name" do
+          opts = client.format_options({})
+          expect(opts[:to]).to eq([:default])
+        end
+      end
+
+      context 'when an array is provided' do
+        it "returns the array" do
+          opts = client.format_options({to: [:ops_dashboard, :sales_dashboard]})
+          expect(opts[:to]).to eq([:ops_dashboard, :sales_dashboard])
+        end
+      end
+
+      context 'when a symbol is provided' do
+        it "wraps it in an array" do
+          opts = client.format_options({to: :sales_dashboard})
+          expect(opts[:to]).to eq([:sales_dashboard])
+        end
+      end
+    end
+
+    describe ':tags' do
+      context 'when a string is provided' do
+        it "wraps it in an array" do
+          opts = client.format_options({tags: :sales})
+          expect(opts[:tags]).to eq([:sales])
+        end
+      end
+
+      context 'when an array is provided' do
+        it "returns the array" do
+          opts = client.format_options({tags: [:sales, :opts]})
+          expect(opts[:tags]).to eq([:sales,:opts])
+        end
+      end
+    end
+
+    describe ':sample_rate' do
+      context 'when it is not provided' do
+        it "defaults to 1.0" do
+          opts = client.format_options({})
+          expect(opts[:sample_rate]).to eq 1.0
+        end
+      end
+
+      context 'when it is provided' do
+        it "sets the sample rate" do
+          opts = client.format_options({sample_rate: 0.5})
+          expect(opts[:sample_rate]).to eq 0.5
+        end
+      end
+    end
+  end
 
   describe '#default_endpoint' do
     it "returns the default endpoint" do
@@ -135,11 +249,11 @@ RSpec.describe Yodeler::Client do
       it{
         client = Yodeler::Client.new
         client.adapter(:memory) do |memory|
-          memory.prefix = :bar
+          memory.max_queue_size = 10
         end
 
         expect(client).to have_endpoint(:default).using(:memory)
-        expect(client.default_endpoint.adapter.prefix).to be :bar
+        expect(client.default_endpoint.adapter.max_queue_size).to be 10
       }
     end
   end

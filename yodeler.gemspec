@@ -8,8 +8,8 @@ Gem::Specification.new do |spec|
   spec.version       = Yodeler::VERSION
   spec.authors       = ["Cory O'Daniel"]
   spec.email         = ["github@coryodaniel.com"]
-  spec.description   = "A generic instrumentation library with a multiple pluggable backend adapters."
-  spec.summary       = "A generic instrumentation library with a multiple pluggable backend adapters. Spoutin' off noise to whoever is listening."
+  spec.description   = "A generic instrumentation library thats supports reporting to multiple endpoints via pluggable backend adapters."
+  spec.summary       = "A generic instrumentation library thats supports reporting to multiple endpoints via pluggable backend adapters. Spoutin' off noise to whoever is listening."
   spec.homepage      = "http://github.com/coryodaniel/yodeler"
 
   # Prevent pushing this gem to RubyGems.org by setting 'allowed_push_host', or

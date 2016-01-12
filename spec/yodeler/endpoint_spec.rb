@@ -13,10 +13,10 @@ RSpec.describe Yodeler::Endpoint do
       context "when passed a block" do
         it "configures the adapter" do
           Yodeler.configure do |client|
-            client.adapter(:memory){ |mem| mem.prefix = :bar }
+            client.adapter(:memory){ |mem| mem.max_queue_size = 10 }
           end
 
-          expect(Yodeler.client.default_endpoint.adapter.prefix).to be :bar
+          expect(Yodeler.client.default_endpoint.adapter.max_queue_size).to be 10
         end
       end
 
@@ -25,7 +25,7 @@ RSpec.describe Yodeler::Endpoint do
           Yodeler.configure do |client|
             client.adapter(:memory)
           end
-          expect(Yodeler.client.default_endpoint.adapter.prefix).to be_nil
+          expect(Yodeler.client.default_endpoint.adapter.max_queue_size).to be 1000
         end
       end
     end

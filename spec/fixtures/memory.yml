@@ -1,2 +1,2 @@
 adapter: memory
-prefix: foo
+max_queue_size: 10

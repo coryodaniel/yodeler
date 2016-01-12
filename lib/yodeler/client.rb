@@ -3,10 +3,14 @@ require 'socket'
 module Yodeler
   class Client
     attr_accessor :default_endpoint_name
+    attr_accessor :default_prefix
+    attr_accessor :default_sample_rate
     attr_reader :endpoints
 
     def initialize
       @endpoints = {}
+      @default_sample_rate = 1.0
+      @default_prefix = nil
       @hostname  = Socket.gethostname
     end
 
@@ -41,12 +45,83 @@ module Yodeler
       default_endpoint.use(name, &block)
     end
 
+    # Set a gauge
+    #
+    # @example
+    #   client.gauge('users.count', 20_000_000)
+    #   client.gauge('users.count', 20_000_000, { tags: %w(something) })
+    #
+    # @param [~String] name of the metric
+    # @param [~Fixnum] value of the metric
+    # @param [Hash] opts={} Examples {#format_options}
+    # @return [Yodeler::Metric, nil] the dispatched metric, nil if not sampled
     def gauge(name, value, opts={})
-      opts = format_options(opts)
+      dispatch(:gauge, name, value, opts)
+    end
 
-      metric_type = :gauge
-      #adapter.prefix
-      #@hostname
+    # Increment a counter
+    #
+    # @example
+    #   client.increment 'user.signup'
+    #   client.increment 'user.signup', {}
+    #   client.increment 'user.signup', 1, {}
+    #
+    # @param [~String] name of the metric
+    # @param [~Fixnum] value=1 of the metric
+    # @param [Hash] opts={} Examples {#format_options}
+    # @return [Yodeler::Metric, nil] the dispatched metric, nil if not sampled
+    def increment(name, value=1, opts={})
+      if value.kind_of?(Hash)
+        opts = value
+        value = 1
+      end
+      dispatch(:increment, name, value, opts)
+    end
+
+    # Measure how long something takes
+    #
+    # @example
+    #   client.timing 'eat.sandwich', 250
+    #   client.timing('eat.pizza') do
+    #     user.eat(pizza) #=> THAT WAS QUICK FATSO!
+    #   end
+    #
+    # @param [~String] name of the metric
+    # @param [~Fixnum] value time in ms
+    # @param [Hash] opts={} Examples {#format_options}
+    # @return [Yodeler::Metric, nil, Object]
+    #   the dispatched metric, nil if not sampled
+    #   if a block is given the result of the block is returned
+    def timing(name, value=nil, opts={})
+      if value.kind_of?(Hash)
+        opts = value
+        value = nil
+      end
+
+      _retval = nil
+
+      if block_given?
+        start = Time.now
+        _retval = yield
+        value = Time.now - start
+      end
+
+      metric = dispatch(:timing, name, value, opts)
+      _retval || metric
+    end
+
+    # Dispatch an event
+    #
+    # @example
+    #   client.event('item.sold', purchase.to_json)
+    #   client.event('user.sign_up', {name: user.name, avatar: user.image_url})
+    #
+    # @param [~String] name of the metric
+    # @param [~Hash] value of the metric
+    # @param [Hash] opts={} Examples {#format_options}
+    # @return [Yodeler::Metric, nil] the dispatched metric, nil if not sampled
+    def event(name, payload, opts={})
+      dispatch(:event, name, payload, opts)
     end
 
     # Formats/Defaults metric options
@@ -59,21 +134,33 @@ module Yodeler
     def format_options(opts)
       endpoint_names  = opts.delete(:to) || [default_endpoint_name]
       tags            = opts.delete(:tags)
+      prefix          = opts.delete(:prefix) || default_prefix
 
       {
+        prefix:       prefix,
         to:           [endpoint_names].flatten.compact,
-        sample_rate:  opts.delete(:sample_rate) || 1.0,
-        tags:         [tags].flatten.compact
+        sample_rate:  opts.delete(:sample_rate) || default_sample_rate,
+        tags:         [tags].flatten.compact,
+        hostname:     @hostname
       }
     end
 
     private
 
-    def record_metric()
-    end
+    def dispatch(type, name, value, opts)
+      opts = format_options(opts)
+      destinations = opts.delete(:to)
+      metric = Metric.new(type, name, value, opts)
 
-    def record_event()
-    end
+      return nil unless metric.sample?
 
+      destinations.each do |endpoint_name|
+        if @endpoints[endpoint_name]
+          @endpoints[endpoint_name].adapter.dispatch(metric)
+        end
+      end
+
+      metric
+    end
   end
 end

@@ -1,6 +1,58 @@
 module ClientHelper
   extend RSpec::Matchers::DSL
 
+  # This matcher is specifically for the MemoryAdapter
+  matcher :have_dispatched do |type, name|
+    match do |adapter|
+      @type = type
+      @name = name
+
+      metric = adapter.queue.find{|item|
+        item.name == @name && item.type == @type
+      }
+
+      if @delta && @value
+        expect(metric.value).to be_within(@delta).of(@value)
+      elsif @value
+        expect(metric.value).to eq @value
+      else
+        metric
+      end
+    end
+
+    chain(:with) do |value|
+      @value = value
+    end
+
+    chain(:within) do |delta|
+      @delta = delta
+    end
+
+    chain(:of) do |value|
+      @value = value
+    end
+
+    description do |adapter|
+      binding.pry
+      msg = ["dispatched a '#{type}' event named '#{@name}'"]
+
+      if @delta && @value
+        msg << "with a value within #{@delta} of #{@value}"
+      elsif @value
+        msg << "with a value of \"#{@value}\""
+      end
+      msg.join(' ')
+    end
+
+    failure_message do |adapter|
+      "expected to #{description}"
+    end
+
+    failure_message_when_negated do |adapter|
+      "expected not to #{description}"
+    end
+  end
+
   matcher :have_endpoint do |endpoint_name|
     match do |client|
       @endpoint = client.endpoints[endpoint_name]

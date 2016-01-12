@@ -1,32 +1,18 @@
 require "yaml"
+require 'forwardable'
+
 require "yodeler/version"
-require "yodeler/adapters/base"
 require "yodeler/endpoint"
 require "yodeler/client"
+require "yodeler/metric"
+
+require "yodeler/duplicate_endpoint_name_error"
+require "yodeler/adapter_not_registered_error"
 
 module Yodeler
-  class DuplicateEndpointNameError < StandardError
-    attr_reader :name
-    def initialize(name:)
-      @name = name
-      super("An instance of Yodeler::Endpoint named '#{name}' already exists.")
-    end
-  end
-
-  class AdapterNotRegisteredError < StandardError
-    attr_reader :name
-    def initialize(name:)
-      @name = name
-      msg = [
-        "No Yodeler Adapter registed for: ':#{name}'",
-        "Register an adapter with:",
-        "Yodeler.register_adapter(:#{name}, CustomAdapterClass)"
-      ].join("\n")
-      super(msg)
-    end
-  end
-
   class << self
+    extend Forwardable
+    def_delegators :@client, :gauge, :increment, :timing, :event
 
     #
     # @private
@@ -67,5 +53,6 @@ module Yodeler
 end
 
 Yodeler.setup!
+require "yodeler/adapters/base"
 require "yodeler/adapters/memory_adapter"
 require "yodeler/adapters/void_adapter"
