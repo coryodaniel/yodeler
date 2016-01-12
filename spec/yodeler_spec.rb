@@ -3,9 +3,49 @@ require 'spec_helper'
 RSpec.describe Yodeler do
   describe 'DSL' do
     context 'instrumentation' do
-      context 'when reporting to multiple endpoints' do
-        describe '#to'
-        describe 'the :to option'
+      describe '#gauge' do
+        it "delegates #gauge to @client" do
+          Yodeler.configure{ |client| client.adapter(:memory) }
+          adapter = Yodeler.client.default_endpoint.adapter
+
+          Yodeler.gauge("test", 3)
+          expect(adapter).to have_dispatched(:gauge, "test").with(3)
+        end
+      end
+
+      describe '#increment' do
+        it "delegates #increment to @client" do
+          Yodeler.configure{ |client| client.adapter(:memory) }
+          adapter = Yodeler.client.default_endpoint.adapter
+
+          Yodeler.increment("test")
+          expect(adapter).to have_dispatched(:increment, "test").with(1)
+        end
+      end
+
+      describe '#event' do
+        it "delegates #event to @client" do
+          Yodeler.configure{ |client| client.adapter(:memory) }
+          adapter = Yodeler.client.default_endpoint.adapter
+
+          Yodeler.event("test", {color: 'green'})
+          expect(adapter).to have_dispatched(:event, "test").with({color: 'green'})
+        end
+      end
+
+      describe '#timing' do
+        it "delegates #timing to @client" do
+          Yodeler.configure{ |client| client.adapter(:memory) }
+          adapter = Yodeler.client.default_endpoint.adapter
+
+          retval = Yodeler.timing("test") do
+            sleep(0.001)
+            :green
+          end
+
+          expect(retval).to be :green # OH HOW META!1!!
+          expect(adapter).to have_dispatched(:timing, "test").within(1).of(0)
+        end
       end
     end
 
@@ -13,8 +53,8 @@ RSpec.describe Yodeler do
       context "when setting the default endpoint name" do
         it "returns the new default endpoint" do
           Yodeler.configure do |client|
-            client.adapter(:memory){ |mem| mem.prefix = :bar }
-            client.endpoint(:dashboard).use(:memory){ |mem| mem.prefix = :bar }
+            client.adapter(:memory){ |mem| mem.max_queue_size = 5 }
+            client.endpoint(:dashboard).use(:memory){ |mem| mem.max_queue_size = 10 }
             client.default_endpoint_name = :dashboard
           end
 
@@ -25,12 +65,12 @@ RSpec.describe Yodeler do
       context "when implicitly creating an endpoint" do
         it "sets the default endpoint" do
           Yodeler.configure do |client|
-            client.adapter(:memory){ |mem| mem.prefix = :bar }
+            client.adapter(:memory){ |mem| mem.max_queue_size = 100 }
           end
 
           expect(Yodeler.client.default_endpoint.name).to be :default
           expect(Yodeler.client.default_endpoint.adapter).to be_kind_of Yodeler::Adapters::MemoryAdapter
-          expect(Yodeler.client.default_endpoint.adapter.prefix).to be :bar
+          expect(Yodeler.client.default_endpoint.adapter.max_queue_size).to be 100
         end
 
         it "allows skipping a #use block" do
@@ -73,32 +113,32 @@ RSpec.describe Yodeler do
           Yodeler.configure do |client|
             client.endpoint(:sales_dashboard).use(:memory)
             client.endpoint(:ops_dashboard).use(:memory) do |memory|
-              memory.prefix = :foo
+              memory.max_queue_size = 20
             end
           end
 
           endpoints = Yodeler.client.endpoints
           expect(endpoints.length).to be 2
-          expect(endpoints[:ops_dashboard].adapter.prefix).to be :foo
+          expect(endpoints[:ops_dashboard].adapter.max_queue_size).to be 20
         end
 
         # Forward proofing adding configurations to an endpoint besides the adapter
         it "allow nested block configuration of the endpoint and adapter" do
           Yodeler.configure do |client|
             client.endpoint(:ops_dashboard).use(:memory) do |memory|
-              memory.prefix = :foo
+              memory.max_queue_size = 20
             end
 
             client.endpoint(:sales_dashboard) do |sales_dashboard|
               sales_dashboard.use(:memory) do |memory|
-                memory.prefix = :bar
+                memory.max_queue_size = 20
               end
             end
           end
 
           endpoints = Yodeler.client.endpoints
-          expect(endpoints[:ops_dashboard].adapter.prefix).to be :foo
-          expect(endpoints[:sales_dashboard].adapter.prefix).to be :bar
+          expect(endpoints[:ops_dashboard].adapter.max_queue_size).to be 20
+          expect(endpoints[:sales_dashboard].adapter.max_queue_size).to be 20
         end
       end
 

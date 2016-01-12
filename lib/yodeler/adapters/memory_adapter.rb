@@ -1,29 +1,22 @@
 module Yodeler::Adapters
   class MemoryAdapter
     include Yodeler::Adapters::Base
-    attr_reader :metrics
-    attr_reader :events
+    attr_reader :queue
+    attr_accessor :max_queue_size
 
     def initialize
+      @max_queue_size = 1000
       flush!
     end
 
     def flush!
-      @metrics  = []
-      @events   = []
+      @queue = []
     end
 
-    private
-
-    def _handle_metric(metric)
-      # prefix, tag, hostname
-      # This sshould be moved to Base
-      # and call a method to be implemented in each adapter
-      @metrics << metric
-    end
-
-    def _handle_event(event)
-      @events << event
+    def dispatch(metric)
+      @queue << metric
+      @queue.shift if @queue.length > @max_queue_size
+      metric
     end
 
     Yodeler.register_adapter(:memory, self)

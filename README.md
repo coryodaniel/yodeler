@@ -1,6 +1,6 @@
 # Yodeler
 
-A generic instrumentation library with a multiple pluggable backend adapters.
+A generic instrumentation library thats supports reporting to multiple endpoints via pluggable backend adapters.
 
 Spoutin' off noise to whoever is listening.
 
@@ -30,13 +30,13 @@ Or install it yourself as:
 Create an initializer in ```config/initializers/yodeler.rb```
 TODO
 
-#### Propono (SNS/SQS) Example
-TODO
-
 #### HTTP Adapter Example
 TODO
 
 #### HTTP Adapter [Dashing Example](https://github.com/stacksocial/dashing)
+TODO
+
+#### Propono (SNS/SQS) Example
 TODO
 
 ### Collecting Metrics
@@ -57,14 +57,9 @@ Bug reports and pull requests are welcome on GitHub at https://github.com/coryod
 
 ## TODOs
   * [ ] Pull DSL examples from yodeler_spec
-  * [ ] Instrumentation & Yodeler module instrumentation sugar (Yodeler.increment, etc)
-  * [ ] A full configuration example
-  * [ ] Instrumentation examples
+    * [ ] A full configuration example
+    * [ ] Instrumentation examples
   * [ ] yodeler-adapter-http (http.rb)
-  * [ ] Custom adapter documentation  
   * [ ] yodeler-adapter-propono
-  * [ ] Documentation TODOs
-  * [ ] #sample_rate
-  * [ ] #tags
-  * [ ] #prefix
-  * [ ] #hostname
+  * [ ] yodeler-adapter-statsd
+  * [ ] Custom adapter documentation
