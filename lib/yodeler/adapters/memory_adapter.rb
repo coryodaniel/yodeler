@@ -1,6 +1,5 @@
 module Yodeler::Adapters
   class MemoryAdapter
-    include Yodeler::Adapters::Base
     attr_reader :queue
     attr_accessor :max_queue_size
 

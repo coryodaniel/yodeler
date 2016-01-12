@@ -1,6 +1,5 @@
 module Yodeler::Adapters
   class VoidAdapter
-    include Yodeler::Adapters::Base
 
     def dispatch(*)
       #noop

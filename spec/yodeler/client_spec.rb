@@ -11,7 +11,7 @@ RSpec.describe Yodeler::Client do
 
     pending '#set' #Sets count the number of unique values passed to a key.
     pending '#decrement'
-    
+
     describe '#gauge' do
       pending ':delta option' #amount to change gauge by
 
@@ -94,7 +94,7 @@ RSpec.describe Yodeler::Client do
     describe '#event' do
       it "dispatches an event" do
         payload = {name: "Roy", avatar: "http://example.com/fat-chicken.jpg"}
-        client.event('user.sign_up', payload)
+        client.publish('user.sign_up', payload)
         expect(adapter).to have_dispatched(:event, 'user.sign_up').with(payload)
       end
     end

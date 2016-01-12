@@ -28,7 +28,7 @@ RSpec.describe Yodeler do
           Yodeler.configure{ |client| client.adapter(:memory) }
           adapter = Yodeler.client.default_endpoint.adapter
 
-          Yodeler.event("test", {color: 'green'})
+          Yodeler.publish("test", {color: 'green'})
           expect(adapter).to have_dispatched(:event, "test").with({color: 'green'})
         end
       end
