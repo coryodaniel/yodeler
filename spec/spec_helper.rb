@@ -20,6 +20,7 @@ $LOAD_PATH.unshift File.expand_path('../../lib', __FILE__)
 require 'pry'
 require 'yodeler'
 
+require 'webmock/rspec'
 Dir[File.dirname(__FILE__) + "/support/**/*.rb"].each {|f| require f }
 
 RSpec.configure do |c|
@@ -28,6 +29,5 @@ RSpec.configure do |c|
   c.after {
     Yodeler.reset!
     Yodeler.register_adapter(:memory, Yodeler::Adapters::MemoryAdapter)
-    Yodeler.register_adapter(:void, Yodeler::Adapters::VoidAdapter)
   }
 end

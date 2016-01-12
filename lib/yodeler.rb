@@ -12,7 +12,7 @@ require "yodeler/adapter_not_registered_error"
 module Yodeler
   class << self
     extend Forwardable
-    def_delegators :@client, :gauge, :increment, :timing, :event
+    def_delegators :@client, :gauge, :increment, :timing, :publish
 
     #
     # @private
@@ -53,6 +53,5 @@ module Yodeler
 end
 
 Yodeler.setup!
-require "yodeler/adapters/base"
 require "yodeler/adapters/memory_adapter"
-require "yodeler/adapters/void_adapter"
+require "yodeler/adapters/http_adapter"

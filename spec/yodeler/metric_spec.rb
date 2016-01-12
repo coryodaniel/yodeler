@@ -31,4 +31,33 @@ RSpec.describe Yodeler::Metric do
       expect(metric.name).to eq 'test'
     end
   end
+
+  describe '#to_hash' do
+    it "hashifies the metric" do
+      metric = Yodeler::Metric.new(:gauge, 'test', 20, {
+        tags: %w(one two),
+        hostname: "localhost",
+        sample_rate: 1.0
+      })
+
+      expect(metric.to_hash).to eq({
+        type: :gauge,
+        name: 'test',
+        value: 20,
+        tags: ['one', 'two'],
+        hostname: 'localhost'
+      })
+    end
+
+    context 'when it has a prefix' do
+      it "prefixes the name" do
+        metric = Yodeler::Metric.new(:gauge, 'test', 20, prefix: 'foo')
+        expect(metric.to_hash).to eq({
+          type: :gauge,
+          name: 'foo.test',
+          value: 20
+        })
+      end
+    end
+  end
 end
