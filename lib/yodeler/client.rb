@@ -110,24 +110,24 @@ module Yodeler
       _retval || metric
     end
 
-    # Dispatch an event
+    # Publish an event
     #
     # @example
-    #   client.event('item.sold', purchase.to_json)
-    #   client.event('user.sign_up', {name: user.name, avatar: user.image_url})
+    #   client.publish('item.sold', purchase.to_json)
+    #   client.publish('user.sign_up', {name: user.name, avatar: user.image_url})
     #
     # @param [~String] name of the metric
     # @param [~Hash] value of the metric
     # @param [Hash] opts={} Examples {#format_options}
     # @return [Yodeler::Metric, nil] the dispatched metric, nil if not sampled
-    def event(name, payload, opts={})
+    def publish(name, payload, opts={})
       dispatch(:event, name, payload, opts)
     end
 
     # Formats/Defaults metric options
     #
     # @param [Hash] opts metric options
-    # @option opts [Array<String,Symbol>, String, Symbol] :tags ([]) array of tags to apply to metric
+    # @option opts [Array<String,Symbol>, String, Symbol] :tags ([]) array of tags to apply to metric/event
     # @option opts [Float] :sample_rate (1.0) The sample rate to use
     # @option opts [Array<Symbol>, Symbol] :to array of endpoint names to send the metric to. If not set will send to {Yodeler::Client#default_endpoint_name}
     # @return [Hash] formatted, defaulted options

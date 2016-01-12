@@ -1,7 +1,7 @@
 ---
 engines:
   brakeman:
-    enabled: true
+    enabled: false
   bundler-audit:
     enabled: true
   duplication:
@@ -9,9 +9,6 @@ engines:
     config:
       languages:
       - ruby
-      - javascript
-      - python
-      - php
   fixme:
     enabled: true
   rubocop:
