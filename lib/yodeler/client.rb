@@ -11,17 +11,17 @@ module Yodeler
       @endpoints = {}
       @default_sample_rate = 1.0
       @default_prefix = nil
-      @hostname  = Socket.gethostname
+      @hostname = Socket.gethostname
     end
 
     # Register a new endpoint
     #
     # @param [Symbol|String] name of endpoint, must be unique
     # @return [Yodeler::Endpoint]
-    def endpoint(name=:default, &block)
-      raise DuplicateEndpointNameError.new(name: name) if @endpoints[name]
+    def endpoint(name = :default, &block)
+      fail DuplicateEndpointNameError.new(name: name) if @endpoints[name]
       @default_endpoint_name ||= name
-      @endpoints[name] = Endpoint.new(name,&block)
+      @endpoints[name] = Endpoint.new(name, &block)
     end
 
     # Get the default endpoint
@@ -40,8 +40,8 @@ module Yodeler
     # @param [Symbol] name registered adapter name
     # @param [Type] &block configuration for adapter
     # @return [~Yodeler::Adapters::Base] the adapter
-    def adapter(name ,&block)
-      endpoint() if @endpoints.empty?
+    def adapter(name, &block)
+      endpoint if @endpoints.empty?
       default_endpoint.use(name, &block)
     end
 
@@ -55,7 +55,7 @@ module Yodeler
     # @param [~Fixnum] value of the metric
     # @param [Hash] opts={} Examples {#format_options}
     # @return [Yodeler::Metric, nil] the dispatched metric, nil if not sampled
-    def gauge(name, value, opts={})
+    def gauge(name, value, opts = {})
       dispatch(:gauge, name, value, opts)
     end
 
@@ -70,7 +70,7 @@ module Yodeler
     # @param [~Fixnum] value=1 of the metric
     # @param [Hash] opts={} Examples {#format_options}
     # @return [Yodeler::Metric, nil] the dispatched metric, nil if not sampled
-    def increment(name, value=1, opts={})
+    def increment(name, value = 1, opts = {})
       if value.kind_of?(Hash)
         opts = value
         value = 1
@@ -92,18 +92,17 @@ module Yodeler
     # @return [Yodeler::Metric, nil, Object]
     #   the dispatched metric, nil if not sampled
     #   if a block is given the result of the block is returned
-    def timing(name, value=nil, opts={})
+    def timing(name, value = nil, opts = {})
       if value.kind_of?(Hash)
         opts = value
         value = nil
       end
 
       _retval = nil
-
       if block_given?
-        start = Time.now
+        start = Time.now.to_i
         _retval = yield
-        value = Time.now - start
+        value = Time.now.to_i - start
       end
 
       metric = dispatch(:timing, name, value, opts)
@@ -114,22 +113,25 @@ module Yodeler
     #
     # @example
     #   client.publish('item.sold', purchase.to_json)
-    #   client.publish('user.sign_up', {name: user.name, avatar: user.image_url})
+    #   client.publish('user.sign_up', {name: user.name, avatar: user.image})
     #
     # @param [~String] name of the metric
     # @param [~Hash] value of the metric
     # @param [Hash] opts={} Examples {#format_options}
     # @return [Yodeler::Metric, nil] the dispatched metric, nil if not sampled
-    def publish(name, payload, opts={})
+    def publish(name, payload, opts = {})
       dispatch(:event, name, payload, opts)
     end
 
     # Formats/Defaults metric options
     #
     # @param [Hash] opts metric options
-    # @option opts [Array<String,Symbol>, String, Symbol] :tags ([]) array of tags to apply to metric/event
+    # @option opts [Array<String,Symbol>, String, Symbol] :tags ([])
+    #   array of tags to apply to metric/event
     # @option opts [Float] :sample_rate (1.0) The sample rate to use
-    # @option opts [Array<Symbol>, Symbol] :to array of endpoint names to send the metric to. If not set will send to {Yodeler::Client#default_endpoint_name}
+    # @option opts [Array<Symbol>, Symbol] :to
+    #   array of endpoint names to send the metric to.
+    #   If not set will send to {Yodeler::Client#default_endpoint_name}
     # @return [Hash] formatted, defaulted options
     def format_options(opts)
       endpoint_names  = opts.delete(:to) || [default_endpoint_name]
