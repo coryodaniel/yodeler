@@ -1,7 +1,7 @@
 if ENV['CI']
   require 'codeclimate-test-reporter'
   SimpleCov.profiles.define 'default' do
-    add_filter "spec"
+    add_filter 'spec'
   end
 
   CodeClimate::TestReporter.configure do |config|
@@ -11,7 +11,7 @@ if ENV['CI']
 else
   require 'simplecov'
   SimpleCov.profiles.define 'default' do
-    add_filter "spec"
+    add_filter 'spec'
   end
   SimpleCov.start 'default'
 end
@@ -21,7 +21,7 @@ require 'pry'
 require 'yodeler'
 
 require 'webmock/rspec'
-Dir[File.dirname(__FILE__) + "/support/**/*.rb"].each {|f| require f }
+Dir[File.dirname(__FILE__) + '/support/**/*.rb'].each { |f| require f }
 
 RSpec.configure do |c|
   c.include ConfigHelper
@@ -32,6 +32,6 @@ RSpec.configure do |c|
   }
 
   c.after(:suite) do
-    WebMock.disable_net_connect!(:allow => 'codeclimate.com')
+    WebMock.disable_net_connect!(allow: 'codeclimate.com')
   end
 end

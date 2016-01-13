@@ -137,13 +137,15 @@ module Yodeler
       endpoint_names  = opts.delete(:to) || [default_endpoint_name]
       tags            = opts.delete(:tags)
       prefix          = opts.delete(:prefix) || default_prefix
+      timestamp       = opts.delete(:timestamp) || Time.now.utc.iso8601
 
       {
         prefix:       prefix,
         to:           [endpoint_names].flatten.compact,
         sample_rate:  opts.delete(:sample_rate) || default_sample_rate,
         tags:         [tags].flatten.compact,
-        hostname:     @hostname
+        hostname:     @hostname,
+        timestamp:    timestamp
       }
     end
 
@@ -152,6 +154,7 @@ module Yodeler
     def dispatch(type, name, value, opts)
       opts = format_options(opts)
       destinations = opts.delete(:to)
+
       metric = Metric.new(type, name, value, opts)
 
       return nil unless metric.sample?

@@ -8,7 +8,7 @@ module Yodeler::Adapters
     attr_accessor :use_ssl
     attr_accessor :default_params
 
-    def initialize(host=nil, port:nil, path:nil, use_ssl:false, params:{})
+    def initialize(host = nil, port:nil, path:nil, use_ssl:false, params:{})
       @host = host
       @port = port
       @path = path
@@ -26,7 +26,8 @@ module Yodeler::Adapters
     end
 
     def dispatch(metric)
-      (@handlers[metric.type] || @handlers[:default]).call(url, metric, default_params)
+      dispatcher = @handlers[metric.type] || @handlers[:default]
+      dispatcher.call(url, metric, default_params)
     end
 
     def url
@@ -34,6 +35,7 @@ module Yodeler::Adapters
     end
 
     private
+
     def host_with_port
       if port
         "#{host}:#{port}"

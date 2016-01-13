@@ -102,7 +102,7 @@ Yodeler.configure do |client|
     }
 
     # Overwrite the default http dispatcher or overwrite an individual metric dispatcher
-    #   http.handle(:gauge){|url, metric, default_params| ... something cool ... }
+    #   http.handle(:gauge){ |url, metric, default_params| ... something cool ... }
     http.handle(:default) do |url, metric, default_params|
       # This is the default handler definition, but you could change it
       HTTP.post(url, json: default_params.merge(metric.to_hash))
@@ -198,3 +198,4 @@ Bug reports and pull requests are welcome on GitHub at https://github.com/coryod
   * [ ] Dispatch to any object or proc, if adapter not registered
     -> client.endpoint(:dashboard).use(:something_that_responds_to_dispatch)
     -> client.endpoint(:dashboard).use{ |metric| MyWorker.perform_later(metric) }
+  * [ ] more yard docs

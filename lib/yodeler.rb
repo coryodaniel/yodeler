@@ -1,13 +1,13 @@
-require "yaml"
+require 'yaml'
 require 'forwardable'
 
-require "yodeler/version"
-require "yodeler/endpoint"
-require "yodeler/client"
-require "yodeler/metric"
+require 'yodeler/version'
+require 'yodeler/endpoint'
+require 'yodeler/client'
+require 'yodeler/metric'
 
-require "yodeler/duplicate_endpoint_name_error"
-require "yodeler/adapter_not_registered_error"
+require 'yodeler/duplicate_endpoint_name_error'
+require 'yodeler/adapter_not_registered_error'
 
 module Yodeler
   class << self
@@ -21,7 +21,7 @@ module Yodeler
       @registered_adapters = {}
     end
 
-    def register_adapter(name,klass)
+    def register_adapter(name, klass)
       @registered_adapters[name] = klass
     end
 
@@ -29,9 +29,7 @@ module Yodeler
     # @private
     def registered_adapters(name)
       klass = @registered_adapters[name]
-      if !klass
-        raise AdapterNotRegisteredError.new(name: name)
-      end
+      fail AdapterNotRegisteredError.new(name: name) unless klass
       @registered_adapters[name]
     end
 
@@ -40,9 +38,7 @@ module Yodeler
       setup!
     end
 
-    def client
-      @client
-    end
+    attr_reader :client
 
     def configure
       @client = Yodeler::Client.new
@@ -53,5 +49,5 @@ module Yodeler
 end
 
 Yodeler.setup!
-require "yodeler/adapters/memory_adapter"
-require "yodeler/adapters/http_adapter"
+require 'yodeler/adapters/memory_adapter'
+require 'yodeler/adapters/http_adapter'

@@ -1,8 +1,7 @@
 module Yodeler::Adapters
   class VoidAdapter
-
     def dispatch(*)
-      #noop
+      # noop
     end
 
     Yodeler.register_adapter(:void, self)

@@ -28,8 +28,6 @@ module Yodeler
       @adapter
     end
 
-    def adapter
-      @adapter
-    end
+    attr_reader :adapter
   end
 end

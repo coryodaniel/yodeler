@@ -7,9 +7,9 @@ module ClientHelper
       @type = type
       @name = name
 
-      metric = adapter.queue.find{|item|
+      metric = adapter.queue.find do |item|
         item.name == @name && item.type == @type
-      }
+      end
 
       if @delta && @value
         expect(metric.value).to be_within(@delta).of(@value)
@@ -44,11 +44,11 @@ module ClientHelper
       msg.join(' ')
     end
 
-    failure_message do |adapter|
+    failure_message do |_adapter|
       "expected to #{description}"
     end
 
-    failure_message_when_negated do |adapter|
+    failure_message_when_negated do |_adapter|
       "expected not to #{description}"
     end
   end
@@ -56,7 +56,7 @@ module ClientHelper
   matcher :have_endpoint do |endpoint_name|
     match do |client|
       @endpoint = client.endpoints[endpoint_name]
-      passed = @endpoint.kind_of?(Yodeler::Endpoint)
+      passed = @endpoint.is_a?(Yodeler::Endpoint)
 
       if passed
         if @adapter_name
@@ -77,20 +77,20 @@ module ClientHelper
       @without_adapter = true
     end
 
-    description do |client|
+    description do |_client|
       msg = ["create a client with an endpoint named '#{endpoint_name}'"]
       if @adapter_name
         class_name = lookup_adapter_by_name(@adapter_name)
         msg << "using the '#{class_name}' adapter"
       elsif @without_adapter
-        msg << "without an adapter"
+        msg << 'without an adapter'
       end
       msg.join(' ')
     end
 
     failure_message do |client|
       msg = ["expected to #{description}"]
-      msg << "Registered endpoints:"
+      msg << 'Registered endpoints:'
       client.endpoints.each do |name, endpoint|
         if endpoint.adapter
           msg << "  #{name} using: #{endpoint.adapter.class}"

@@ -5,7 +5,7 @@ module Yodeler
       @name = name
       msg = [
         "No Yodeler Adapter registed for: ':#{name}'",
-        "Register an adapter with:",
+        'Register an adapter with:',
         "Yodeler.register_adapter(:#{name}, CustomAdapterClass)"
       ].join("\n")
       super(msg)
