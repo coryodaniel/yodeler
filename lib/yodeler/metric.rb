@@ -3,6 +3,8 @@ class Yodeler::Metric
   attr_reader :sample_rate, :tags, :prefix
   attr_reader :options
 
+  TYPES = [:event, :increment, :gauge, :timing]
+
   def initialize(type, name, value, opts={})
     @type = type
     @name = name
@@ -32,5 +34,11 @@ class Yodeler::Metric
     hash[:hostname] = options[:hostname] if options[:hostname]
 
     hash
+  end
+
+  TYPES.each do |type_meth|
+    define_method("#{type_meth}?") do
+      type_meth.to_sym == type
+    end
   end
 end

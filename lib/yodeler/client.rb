@@ -71,7 +71,7 @@ module Yodeler
     # @param [Hash] opts={} Examples {#format_options}
     # @return [Yodeler::Metric, nil] the dispatched metric, nil if not sampled
     def increment(name, value = 1, opts = {})
-      if value.kind_of?(Hash)
+      if value.is_a?(Hash)
         opts = value
         value = 1
       end
@@ -93,20 +93,20 @@ module Yodeler
     #   the dispatched metric, nil if not sampled
     #   if a block is given the result of the block is returned
     def timing(name, value = nil, opts = {})
-      if value.kind_of?(Hash)
+      if value.is_a?(Hash)
         opts = value
         value = nil
       end
 
-      _retval = nil
+      retval = nil
       if block_given?
         start = Time.now.to_i
-        _retval = yield
+        retval = yield
         value = Time.now.to_i - start
       end
 
       metric = dispatch(:timing, name, value, opts)
-      _retval || metric
+      retval || metric
     end
 
     # Publish an event

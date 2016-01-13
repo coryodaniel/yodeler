@@ -1,6 +1,12 @@
 require 'spec_helper'
 
 RSpec.describe Yodeler::Metric do
+
+  it "knows its type" do
+    metric = Yodeler::Metric.new(:gauge, 'test', 10)
+    expect(metric).to be_gauge
+    expect(metric).to_not be_increment
+  end
   describe '#sample?' do
     let(:metric){ Yodeler::Metric.new(:gauge, 'test', 1, sample_rate: 0.75)}
     context 'when it is not chosen to be sampled' do

@@ -195,3 +195,6 @@ Bug reports and pull requests are welcome on GitHub at https://github.com/coryod
   * [ ] Custom adapter documentation
   * [ ] Client#format_options -> Metric.format_options
   * [ ] Client#default_endpoint_name accept array of names
+  * [ ] Dispatch to any object or proc, if adapter not registered
+    -> client.endpoint(:dashboard).use(:something_that_responds_to_dispatch)
+    -> client.endpoint(:dashboard).use{ |metric| MyWorker.perform_later(metric) }
