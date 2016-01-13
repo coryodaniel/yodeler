@@ -12,7 +12,9 @@ module Yodeler
       @value = value
       @prefix = opts.delete(:prefix)
       @sample_rate = opts.delete(:sample_rate)
-      @options = opts
+      @timestamp = opts.delete(:timestamp)
+      @tags = opts.delete(:tags)
+      @hostname = opts.delete(:hostname)
     end
 
     def name
@@ -30,9 +32,10 @@ module Yodeler
         type: @type,
         value: @value
       }
-
-      hash[:tags] = options[:tags] if options[:tags] && options[:tags].any?
-      hash[:hostname] = options[:hostname] if options[:hostname]
+      
+      hash[:timestamp] = @timestamp if @timestamp
+      hash[:tags] = @tags if @tags && @tags.any?
+      hash[:hostname] = @hostname if @hostname
 
       hash
     end

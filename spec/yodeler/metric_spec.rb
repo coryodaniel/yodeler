@@ -40,15 +40,20 @@ RSpec.describe Yodeler::Metric do
 
   describe '#to_hash' do
     it 'hashifies the metric' do
-      metric = Yodeler::Metric.new(:gauge, 'test', 20,         tags: %w(one two),
-                                                               hostname: 'localhost',
-                                                               sample_rate: 1.0)
+      now = Time.now.utc.iso8601
+      metric = Yodeler::Metric.new(:gauge, 'test', 20,{
+        tags: %w(one two),
+        hostname: 'localhost',
+        sample_rate: 1.0,
+        timestamp: now
+      })
 
       expect(metric.to_hash).to eq(type: :gauge,
                                    name: 'test',
                                    value: 20,
                                    tags: %w(one two),
-                                   hostname: 'localhost')
+                                   hostname: 'localhost',
+                                   timestamp: now)
     end
 
     context 'when it has a prefix' do
