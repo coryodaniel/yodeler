@@ -5,13 +5,30 @@ module Yodeler
     attr_accessor :default_endpoint_name
     attr_accessor :default_prefix
     attr_accessor :default_sample_rate
+    attr_accessor :timestamp_format
     attr_reader :endpoints
+
+    TIMESTAMP_FORMATS = {
+      iso8601: -> { Time.now.utc.iso8601 },
+      epoch:   -> { Time.now.to_i }
+    }
 
     def initialize
       @endpoints = {}
       @default_sample_rate = 1.0
       @default_prefix = nil
       @hostname = Socket.gethostname
+      @timestamp_format = :iso8601
+    end
+
+    def timestamp_generator
+      if timestamp_format.is_a?(Symbol) && TIMESTAMP_FORMATS[timestamp_format]
+        TIMESTAMP_FORMATS[timestamp_format].call
+      elsif timestamp_format.is_a?(Proc)
+        timestamp_format.call
+      else
+        raise ArgumentError, "Time format not recognized: #{timestamp_format}. \nOptions are #{TIMESTAMP_FORMATS.join(', ')} or a lamba"
+      end
     end
 
     # Register a new endpoint
@@ -71,7 +88,7 @@ module Yodeler
     # @param [Hash] opts={} Examples {#format_options}
     # @return [Yodeler::Metric, nil] the dispatched metric, nil if not sampled
     def increment(name, value = 1, opts = {})
-      if value.kind_of?(Hash)
+      if value.is_a?(Hash)
         opts = value
         value = 1
       end
@@ -93,20 +110,20 @@ module Yodeler
     #   the dispatched metric, nil if not sampled
     #   if a block is given the result of the block is returned
     def timing(name, value = nil, opts = {})
-      if value.kind_of?(Hash)
+      if value.is_a?(Hash)
         opts = value
         value = nil
       end
 
-      _retval = nil
+      retval = nil
       if block_given?
         start = Time.now.to_i
-        _retval = yield
+        retval = yield
         value = Time.now.to_i - start
       end
 
       metric = dispatch(:timing, name, value, opts)
-      _retval || metric
+      retval || metric
     end
 
     # Publish an event
@@ -137,13 +154,15 @@ module Yodeler
       endpoint_names  = opts.delete(:to) || [default_endpoint_name]
       tags            = opts.delete(:tags)
       prefix          = opts.delete(:prefix) || default_prefix
+      timestamp       = opts.delete(:timestamp) || timestamp_generator
 
       {
         prefix:       prefix,
         to:           [endpoint_names].flatten.compact,
         sample_rate:  opts.delete(:sample_rate) || default_sample_rate,
         tags:         [tags].flatten.compact,
-        hostname:     @hostname
+        hostname:     @hostname,
+        timestamp:    timestamp
       }
     end
 
@@ -152,6 +171,7 @@ module Yodeler
     def dispatch(type, name, value, opts)
       opts = format_options(opts)
       destinations = opts.delete(:to)
+
       metric = Metric.new(type, name, value, opts)
 
       return nil unless metric.sample?

@@ -13,7 +13,7 @@ Spoutin' off noise to whoever is listening.
 Add this line to your application's Gemfile:
 
 ```ruby
-gem 'yodeler', '~>0.1.1'
+gem 'yodeler', '~>0.1.2'
 ```
 
 And then execute:
@@ -40,6 +40,11 @@ Yodeler.configure do |client|
     # http.use_ssl = false
     # http.default_params = {}
   end
+
+  # if no timestamp_format is set, defaults to UTC ISO8601
+  client.timestamp_format = :iso8601
+  #client.timestamp_format = :epoch
+  #client.timestamp_format = -> { Time.now.whatever.you_feel_like! }
 end
 ```
 
@@ -102,7 +107,7 @@ Yodeler.configure do |client|
     }
 
     # Overwrite the default http dispatcher or overwrite an individual metric dispatcher
-    #   http.handle(:gauge){|url, metric, default_params| ... something cool ... }
+    #   http.handle(:gauge){ |url, metric, default_params| ... something cool ... }
     http.handle(:default) do |url, metric, default_params|
       # This is the default handler definition, but you could change it
       HTTP.post(url, json: default_params.merge(metric.to_hash))
@@ -195,3 +200,7 @@ Bug reports and pull requests are welcome on GitHub at https://github.com/coryod
   * [ ] Custom adapter documentation
   * [ ] Client#format_options -> Metric.format_options
   * [ ] Client#default_endpoint_name accept array of names
+  * [ ] Dispatch to any object or proc, if adapter not registered
+    * client.endpoint(:dashboard).use(:something_that_responds_to_dispatch)
+    * client.endpoint(:dashboard).use{ |metric| MyWorker.perform_later(metric) }
+  * [ ] more yard docs
