@@ -12,7 +12,7 @@ RSpec.describe Yodeler::Adapters::HttpAdapter do
       adapter.dispatch(metric)
 
       expect(WebMock).to have_requested(:post, 'http://example.com')
-        .with(body: "{\"name\":\"test\",\"type\":\"gauge\",\"value\":35}")
+        .with(body: '{"uuid":"7ad1ef6a-e71c-4179-99e7-06c8f62151ce","name":"test","type":"gauge","value":35}')
     end
   end
 
@@ -54,7 +54,7 @@ RSpec.describe Yodeler::Adapters::HttpAdapter do
         adapter.dispatch(metric)
 
         expect(WebMock).to have_requested(:get, 'http://example.com/events')
-          .with(body: "{\"name\":\"test\",\"type\":\"gauge\",\"value\":35}")
+          .with(body: '{"uuid":"7ad1ef6a-e71c-4179-99e7-06c8f62151ce","name":"test","type":"gauge","value":35}')
       end
     end
 
@@ -75,10 +75,10 @@ RSpec.describe Yodeler::Adapters::HttpAdapter do
         adapter.dispatch(gauge)
 
         expect(WebMock).to have_requested(:post, 'http://example.com')
-          .with(body: "{\"name\":\"test.increment\",\"type\":\"increment\",\"value\":1}")
+          .with(body: '{"uuid":"7ad1ef6a-e71c-4179-99e7-06c8f62151ce","name":"test.increment","type":"increment","value":1}')
 
         expect(WebMock).to have_requested(:get, 'http://example.com')
-          .with(body: "{\"name\":\"test.gauge\",\"type\":\"gauge\",\"value\":35}")
+          .with(body: '{"uuid":"7ad1ef6a-e71c-4179-99e7-06c8f62151ce","name":"test.gauge","type":"gauge","value":35}')
       end
     end
   end
@@ -92,7 +92,7 @@ RSpec.describe Yodeler::Adapters::HttpAdapter do
       adapter.dispatch(gauge)
 
       expect(WebMock).to have_requested(:post, 'http://example.com')
-        .with(body: "{\"auth_token\":\"SECURZ\",\"name\":\"test.gauge\",\"type\":\"gauge\",\"value\":35}")
+        .with(body: '{"auth_token":"SECURZ","uuid":"7ad1ef6a-e71c-4179-99e7-06c8f62151ce","name":"test.gauge","type":"gauge","value":35}')
     end
   end
 

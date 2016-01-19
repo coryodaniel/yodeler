@@ -5,13 +5,30 @@ module Yodeler
     attr_accessor :default_endpoint_name
     attr_accessor :default_prefix
     attr_accessor :default_sample_rate
+    attr_accessor :timestamp_format
     attr_reader :endpoints
+
+    TIMESTAMP_FORMATS = {
+      iso8601: -> { Time.now.utc.iso8601 },
+      epoch:   -> { Time.now.to_i }
+    }
 
     def initialize
       @endpoints = {}
       @default_sample_rate = 1.0
       @default_prefix = nil
       @hostname = Socket.gethostname
+      @timestamp_format = :iso8601
+    end
+
+    def timestamp_generator
+      if timestamp_format.is_a?(Symbol) && TIMESTAMP_FORMATS[timestamp_format]
+        TIMESTAMP_FORMATS[timestamp_format].call
+      elsif timestamp_format.is_a?(Proc)
+        timestamp_format.call
+      else
+        raise ArgumentError, "Time format not recognized: #{timestamp_format}. \nOptions are #{TIMESTAMP_FORMATS.join(', ')} or a lamba"
+      end
     end
 
     # Register a new endpoint
@@ -137,7 +154,7 @@ module Yodeler
       endpoint_names  = opts.delete(:to) || [default_endpoint_name]
       tags            = opts.delete(:tags)
       prefix          = opts.delete(:prefix) || default_prefix
-      timestamp       = opts.delete(:timestamp) || Time.now.utc.iso8601
+      timestamp       = opts.delete(:timestamp) || timestamp_generator
 
       {
         prefix:       prefix,

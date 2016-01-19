@@ -23,9 +23,15 @@ require 'yodeler'
 require 'webmock/rspec'
 Dir[File.dirname(__FILE__) + '/support/**/*.rb'].each { |f| require f }
 
+# Vile.
+def SecureRandom.uuid
+  "7ad1ef6a-e71c-4179-99e7-06c8f62151ce"
+end
+
 RSpec.configure do |c|
   c.include ConfigHelper
   c.include ClientHelper
+
   c.after {
     Yodeler.reset!
     Yodeler.register_adapter(:memory, Yodeler::Adapters::MemoryAdapter)

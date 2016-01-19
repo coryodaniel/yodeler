@@ -49,6 +49,7 @@ RSpec.describe Yodeler::Metric do
       })
 
       expect(metric.to_hash).to eq(type: :gauge,
+                                   uuid: "7ad1ef6a-e71c-4179-99e7-06c8f62151ce",
                                    name: 'test',
                                    value: 20,
                                    tags: %w(one two),
@@ -60,6 +61,7 @@ RSpec.describe Yodeler::Metric do
       it 'prefixes the name' do
         metric = Yodeler::Metric.new(:gauge, 'test', 20, prefix: 'foo')
         expect(metric.to_hash).to eq(type: :gauge,
+                                     uuid: "7ad1ef6a-e71c-4179-99e7-06c8f62151ce",
                                      name: 'foo.test',
                                      value: 20)
       end

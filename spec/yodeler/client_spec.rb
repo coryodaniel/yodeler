@@ -131,6 +131,16 @@ RSpec.describe Yodeler::Client do
     end
     let(:adapter) { client.default_endpoint.adapter }
 
+    describe 'when changing the timestamp_format to a proc' do
+      it 'uses the timestamp format' do
+        client.timestamp_format = -> { "2010-01-01"}
+        opts = client.format_options({})
+
+        expect(opts[:timestamp]).to eq("2010-01-01")
+      end
+
+    end
+
     it 'sets an iso8601 UTC timestamp' do
       opts = client.format_options({})
       expected_time = Time.now.utc.strftime("%Y-%m-%dT%H:%M")

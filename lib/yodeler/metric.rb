@@ -1,12 +1,16 @@
+require 'securerandom'
+
 module Yodeler
   class Metric
     attr_reader :type, :value
     attr_reader :sample_rate, :tags, :prefix
+    attr_reader :uuid
     attr_reader :options
 
     TYPES = [:event, :increment, :gauge, :timing]
 
     def initialize(type, name, value, opts = {})
+      @uuid = SecureRandom.uuid
       @type = type
       @name = name
       @value = value
@@ -28,11 +32,12 @@ module Yodeler
 
     def to_hash
       hash = {
+        uuid: uuid,
         name: name,
         type: @type,
         value: @value
       }
-      
+
       hash[:timestamp] = @timestamp if @timestamp
       hash[:tags] = @tags if @tags && @tags.any?
       hash[:hostname] = @hostname if @hostname
