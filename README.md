@@ -13,7 +13,7 @@ Spoutin' off noise to whoever is listening.
 Add this line to your application's Gemfile:
 
 ```ruby
-gem 'yodeler', '~>0.1.1'
+gem 'yodeler', '~>0.1.2'
 ```
 
 And then execute:
@@ -40,6 +40,11 @@ Yodeler.configure do |client|
     # http.use_ssl = false
     # http.default_params = {}
   end
+
+  # if no timestamp_format is set, defaults to UTC ISO8601
+  client.timestamp_format = :iso8601
+  #client.timestamp_format = :epoch
+  #client.timestamp_format = -> { Time.now.whatever.you_feel_like! }
 end
 ```
 
