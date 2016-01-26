@@ -155,6 +155,7 @@ module Yodeler
       tags            = opts.delete(:tags)
       prefix          = opts.delete(:prefix) || default_prefix
       timestamp       = opts.delete(:timestamp) || timestamp_generator
+      meta            = opts.delete(:meta)
 
       {
         prefix:       prefix,
@@ -162,7 +163,8 @@ module Yodeler
         sample_rate:  opts.delete(:sample_rate) || default_sample_rate,
         tags:         [tags].flatten.compact,
         hostname:     @hostname,
-        timestamp:    timestamp
+        timestamp:    timestamp,
+        meta:         meta
       }
     end
 

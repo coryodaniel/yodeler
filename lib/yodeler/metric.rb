@@ -19,6 +19,7 @@ module Yodeler
       @timestamp = opts.delete(:timestamp)
       @tags = opts.delete(:tags)
       @hostname = opts.delete(:hostname)
+      @meta = opts.delete(:meta) || {} #additional meta data to send
     end
 
     def name
@@ -35,12 +36,13 @@ module Yodeler
         uuid: uuid,
         name: name,
         type: @type,
-        value: @value
+        value: @value,
+        meta: @meta
       }
 
-      hash[:timestamp] = @timestamp if @timestamp
-      hash[:tags] = @tags if @tags && @tags.any?
-      hash[:hostname] = @hostname if @hostname
+      hash[:meta][:timestamp] = @timestamp if @timestamp
+      hash[:meta][:tags] = @tags if @tags && @tags.any?
+      hash[:meta][:hostname] = @hostname if @hostname
 
       hash
     end

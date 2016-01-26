@@ -148,6 +148,7 @@ end
 * :tags   - [Array<String,Symbol>, String, Symbol] :tags ([]) array of tags to apply to metric/event
 * :sample_rate - [Float] :sample_rate (1.0) The sample rate to use
 * :to - [Array<Symbol>, Symbol] :to array of endpoint names to send the metric/event to. If not set will send to Yodeler::Client#default_endpoint_name
+* :meta - [Hash] :meta additional meta data to send with metric/event. Meta data like :tags, :hostname and :timestamp are merged into this hash
 
 #### Gauge
 ```ruby
@@ -164,7 +165,7 @@ Yodeler.increment 'users.count'
 Yodeler.increment 'users.count', to: [:devops_reporting, :sales_reporting]
 Yodeler.increment 'revenue', 10_000
 Yodeler.increment 'revenue', 10_000, to: [:devops_reporting, :sales_reporting]
-
+Yodeler.increment 'revenue', 10_000, to: [:devops_reporting, :sales_reporting], meta: {ip: request.remote_ip}
 ```
 
 #### Timing
@@ -184,6 +185,7 @@ Yodeler.publish 'product.sold', wizz_bang
 Yodeler.publish 'product.sold', wizz_bang, prefix: 'ecommerce'
 Yodeler.publish 'product.sold', wizz_bang, sample_rate: 0.25
 Yodeler.publish 'product.sold', wizz_bang, to: [:devops_reporting, :sales_reporting]
+Yodeler.publish 'product.sold', wizz_bang, to: [:devops_reporting, :sales_reporting], meta: {ip: request.remote_ip}
 ```
 
 ## Development

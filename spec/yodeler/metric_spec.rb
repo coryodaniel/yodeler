@@ -45,16 +45,19 @@ RSpec.describe Yodeler::Metric do
         tags: %w(one two),
         hostname: 'localhost',
         sample_rate: 1.0,
-        timestamp: now
+        timestamp: now,
+        meta: {ip: '127.0.0.1'}
       })
 
       expect(metric.to_hash).to eq(type: :gauge,
                                    uuid: "7ad1ef6a-e71c-4179-99e7-06c8f62151ce",
                                    name: 'test',
                                    value: 20,
-                                   tags: %w(one two),
-                                   hostname: 'localhost',
-                                   timestamp: now)
+                                   meta: {
+                                     ip: '127.0.0.1',
+                                     tags: %w(one two),
+                                     hostname: 'localhost',
+                                     timestamp: now})
     end
 
     context 'when it has a prefix' do
@@ -63,7 +66,8 @@ RSpec.describe Yodeler::Metric do
         expect(metric.to_hash).to eq(type: :gauge,
                                      uuid: "7ad1ef6a-e71c-4179-99e7-06c8f62151ce",
                                      name: 'foo.test',
-                                     value: 20)
+                                     value: 20,
+                                     meta: {})
       end
     end
   end

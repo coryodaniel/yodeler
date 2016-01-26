@@ -8,8 +8,9 @@ RSpec.describe Yodeler do
           Yodeler.configure { |client| client.adapter(:memory) }
           adapter = Yodeler.client.default_endpoint.adapter
 
-          Yodeler.gauge('test', 3)
+          Yodeler.gauge('test', 3, meta: {ip: '127.0.0.1'})
           expect(adapter).to have_dispatched(:gauge, 'test').with(3)
+          expect(adapter.queue.first.to_hash[:meta]).to include(ip: '127.0.0.1')
         end
       end
 
@@ -18,8 +19,9 @@ RSpec.describe Yodeler do
           Yodeler.configure { |client| client.adapter(:memory) }
           adapter = Yodeler.client.default_endpoint.adapter
 
-          Yodeler.increment('test')
+          Yodeler.increment('test', meta: {ip: '127.0.0.1'})
           expect(adapter).to have_dispatched(:increment, 'test').with(1)
+          expect(adapter.queue.first.to_hash[:meta]).to include(ip: '127.0.0.1')
         end
       end
 
@@ -28,8 +30,9 @@ RSpec.describe Yodeler do
           Yodeler.configure { |client| client.adapter(:memory) }
           adapter = Yodeler.client.default_endpoint.adapter
 
-          Yodeler.publish('test', color: 'green')
+          Yodeler.publish('test', {color: 'green'}, meta: {ip: '127.0.0.1'})
           expect(adapter).to have_dispatched(:event, 'test').with(color: 'green')
+          expect(adapter.queue.first.to_hash[:meta]).to include(ip: '127.0.0.1')
         end
       end
 
