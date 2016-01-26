@@ -33,7 +33,6 @@ module ClientHelper
     end
 
     description do |adapter|
-      binding.pry
       msg = ["dispatched a '#{type}' event named '#{@name}'"]
 
       if @delta && @value
