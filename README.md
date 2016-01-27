@@ -186,6 +186,17 @@ Yodeler.publish 'product.sold', wizz_bang, prefix: 'ecommerce'
 Yodeler.publish 'product.sold', wizz_bang, sample_rate: 0.25
 Yodeler.publish 'product.sold', wizz_bang, to: [:devops_reporting, :sales_reporting]
 Yodeler.publish 'product.sold', wizz_bang, to: [:devops_reporting, :sales_reporting], meta: {ip: request.remote_ip}
+
+Yodeler.publish 'product.sold' do |msg|
+  msg[:name] = "Wizz Bang 3000"
+  msg[:image_url] = "http://example.com/wizzbang.jpg"
+end
+
+Yodeler.publish 'product.sold', tags: [:wizzbang] do |msg|
+  msg[:name] = "Wizz Bang 3000"
+  msg[:image_url] = "http://example.com/wizzbang.jpg"
+end
+
 ```
 
 ## Development
