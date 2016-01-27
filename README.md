@@ -186,6 +186,17 @@ Yodeler.publish 'product.sold', wizz_bang, prefix: 'ecommerce'
 Yodeler.publish 'product.sold', wizz_bang, sample_rate: 0.25
 Yodeler.publish 'product.sold', wizz_bang, to: [:devops_reporting, :sales_reporting]
 Yodeler.publish 'product.sold', wizz_bang, to: [:devops_reporting, :sales_reporting], meta: {ip: request.remote_ip}
+
+Yodeler.publish 'product.sold' do |msg|
+  msg[:name] = "Wizz Bang 3000"
+  msg[:image_url] = "http://example.com/wizzbang.jpg"
+end
+
+Yodeler.publish 'product.sold', tags: [:wizzbang] do |msg|
+  msg[:name] = "Wizz Bang 3000"
+  msg[:image_url] = "http://example.com/wizzbang.jpg"
+end
+
 ```
 
 ## Development
@@ -199,6 +210,8 @@ To install this gem onto your local machine, run `bundle exec rake install`. To 
 Bug reports and pull requests are welcome on GitHub at https://github.com/coryodaniel/yodeler.
 
 ## TODOs
+  * [ ] Yodeler#publish receive block
+  * [ ] Add a configuration proxy to use instead of initializing adapters and endpoints on #config
   * [ ] Custom adapter documentation
   * [ ] Client#format_options -> Metric.format_options
   * [ ] Client#default_endpoint_name accept array of names
