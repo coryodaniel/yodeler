@@ -97,6 +97,20 @@ RSpec.describe Yodeler::Client do
         client.publish('user.sign_up', payload)
         expect(adapter).to have_dispatched(:event, 'user.sign_up').with(payload)
       end
+
+      context 'when a block is given' do
+        it "dispatches an event" do
+          opts = {tags: ['imablock']}
+          client.publish('user.sign_up', opts) do |msg|
+            msg[:name] = 'Roy'
+            msg[:avatar] = 'http://example.com/fat-chicken.jpg'
+          end
+          expect(adapter).to have_dispatched(:event, 'user.sign_up').with({
+            name: 'Roy',
+            avatar: 'http://example.com/fat-chicken.jpg'
+          })
+        end
+      end
     end
 
     context 'when passed the :sample_rate option' do

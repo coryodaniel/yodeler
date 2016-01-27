@@ -199,6 +199,8 @@ To install this gem onto your local machine, run `bundle exec rake install`. To 
 Bug reports and pull requests are welcome on GitHub at https://github.com/coryodaniel/yodeler.
 
 ## TODOs
+  * [ ] Yodeler#publish receive block
+  * [ ] Add a configuration proxy to use instead of initializing adapters and endpoints on #config
   * [ ] Custom adapter documentation
   * [ ] Client#format_options -> Metric.format_options
   * [ ] Client#default_endpoint_name accept array of names

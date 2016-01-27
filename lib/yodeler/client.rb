@@ -136,8 +136,15 @@ module Yodeler
     # @param [~Hash] value of the metric
     # @param [Hash] opts={} Examples {#format_options}
     # @return [Yodeler::Metric, nil] the dispatched metric, nil if not sampled
-    def publish(name, payload, opts = {})
-      dispatch(:event, name, payload, opts)
+    def publish(name, payload = {}, opts = {})
+      if block_given?
+        opts = payload
+        payload = {}
+        yield(payload)
+        dispatch(:event, name, payload, opts)
+      else
+        dispatch(:event, name, payload, opts)
+      end
     end
 
     # Formats/Defaults metric options
